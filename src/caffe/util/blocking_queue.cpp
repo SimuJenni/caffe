@@ -2,6 +2,7 @@
 #include <string>
 
 #include "caffe/layers/base_data_layer.hpp"
+#include "caffe/layers/fast_hdf5_layer.hpp"
 #include "caffe/parallel.hpp"
 #include "caffe/util/blocking_queue.hpp"
 
@@ -87,5 +88,11 @@ size_t BlockingQueue<T>::size() const {
 
 template class BlockingQueue<Batch<float>*>;
 template class BlockingQueue<Batch<double>*>;
+template class BlockingQueue<FastHDF5InputLayer<float>::Batch*>;
+template class BlockingQueue<FastHDF5InputLayer<double>::Batch*>;
+template class BlockingQueue<Datum*>;
+template class BlockingQueue<shared_ptr<DataReader::QueuePair> >;
+template class BlockingQueue<P2PSync<float>*>;
+template class BlockingQueue<P2PSync<double>*>;
 
 }  // namespace caffe
