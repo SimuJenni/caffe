@@ -1,7 +1,7 @@
 git checkout master
 git pull
 
-BRANCHES=('make_future' 'resize' 'fast_hdf5' 'transform_layer' 'transforming_fast_hdf5' 'array' 'net_from_string' 'color_conv' 'wait_for_cuda' 'repack' 'python_util' 'openmp' 'import_fix')
+BRANCHES=('make_future' 'resize' 'fast_hdf5' 'transform_layer' 'transforming_fast_hdf5' 'net_from_string' 'color_conv' 'wait_for_cuda' 'repack' 'python_util' 'openmp' 'import_fix')
 echo "***************************************************************** "
 echo "********************* Updating all branches ********************* "
 echo "***************************************************************** "
