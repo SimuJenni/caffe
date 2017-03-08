@@ -90,9 +90,5 @@ template class BlockingQueue<Batch<float>*>;
 template class BlockingQueue<Batch<double>*>;
 template class BlockingQueue<FastHDF5InputLayer<float>::Batch*>;
 template class BlockingQueue<FastHDF5InputLayer<double>::Batch*>;
-template class BlockingQueue<Datum*>;
-template class BlockingQueue<shared_ptr<DataReader::QueuePair> >;
-template class BlockingQueue<P2PSync<float>*>;
-template class BlockingQueue<P2PSync<double>*>;
 
 }  // namespace caffe
