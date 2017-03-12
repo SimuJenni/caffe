@@ -317,6 +317,11 @@ void Solver_add_nccl(SGDSolver<Dtype>* solver
   solver->add_callback(nccl);
 #endif
 }
+void waitForCuda() {
+#ifndef CPU_ONLY
+  cudaDeviceSynchronize();
+#endif
+}
 
 template<typename Dtype>
 class NetCallback: public Net<Dtype>::Callback {
@@ -380,6 +385,7 @@ BOOST_PYTHON_MODULE(_caffe) {
   bp::def("solver_rank", &Caffe::solver_rank);
   bp::def("set_solver_rank", &Caffe::set_solver_rank);
   bp::def("set_multiprocess", &Caffe::set_multiprocess);
+  bp::def("wait_for_cuda", &waitForCuda);
 
   bp::def("layer_type_list", &LayerRegistry<Dtype>::LayerTypeList);
 
