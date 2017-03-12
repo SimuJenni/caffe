@@ -12,7 +12,7 @@ namespace caffe {
 template <typename Dtype>
 __global__ void transform_kernel(int N, int C, int bH, int bW, const Dtype* bot,
     int tH, int tW, Dtype* top, Dtype a00, Dtype a01, Dtype a10, Dtype a11,
-    Dtype t0, Dtype t1, Dtype s, const Dtype* m) {
+    Dtype t0, Dtype t1, Dtype s, const Dtype* m, const Dtype* sv) {
   CUDA_KERNEL_LOOP(i, N*C*tW*tH) {
     const int n = i / (C*tW*tH);
     const int c = (i / (tW*tH)) % C;
@@ -30,7 +30,7 @@ __global__ void transform_kernel(int N, int C, int bH, int bW, const Dtype* bot,
                 (1-wx) * (wy)   * bot[(n*C+c)*bW*bH + y0*bW + x1] +
                 (wx)   * (1-wy) * bot[(n*C+c)*bW*bH + y1*bW + x0] +
                 (1-wx) * (1-wy) * bot[(n*C+c)*bW*bH + y1*bW + x1];
-      top[i] = s * (v - m[c]);
+      top[i] = s * sv[c] * (v - m[c]);
     } else {
       top[i] = 0;
     }
@@ -50,8 +50,9 @@ void TransformationLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   // Transform
   for (int i = 0; i < bottom.size(); i++) {
     const int C  = top[i]->shape()[Stop.size()-3];
-    // Get the mean
+    // Get the mean and scale
     const Dtype * mean = mean_value_[i]->gpu_data();
+    const Dtype * scale = scale_value_[i]->gpu_data();
 
     const Dtype * pBot = bottom[i]->gpu_data();
     Dtype * pTop = top[i]->mutable_gpu_data();
@@ -59,7 +60,7 @@ void TransformationLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       transform_kernel<Dtype><<<CAFFE_GET_BLOCKS(C*H*W), CAFFE_CUDA_NUM_THREADS>>>(  //NOLINT
         1, C, bH, bW, pBot+n*C*bH*bW, H, W, pTop+n*C*H*W, aff[n].a00_,
         aff[n].a01_, aff[n].a10_, aff[n].a11_, aff[n].t0_, aff[n].t1_,
-        (Dtype)scale_, mean);
+        (Dtype)scale_, mean, scale);
       CUDA_POST_KERNEL_CHECK;
     }
   }

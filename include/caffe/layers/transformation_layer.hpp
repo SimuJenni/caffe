@@ -46,7 +46,7 @@ class TransformationLayer : public Layer<Dtype> {
 
  protected:
   int crop_size_;
-  std::vector<shared_ptr<Blob<Dtype> > > mean_value_;
+  std::vector<shared_ptr<Blob<Dtype> > > mean_value_, scale_value_;
   bool mirror_, rotate_, synchronized_;
   Dtype scale_, min_scale_, max_scale_;
   std::vector<Affine2D> generate(int N, int W, int H, int W_out, int H_out);

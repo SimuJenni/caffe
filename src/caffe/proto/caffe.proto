@@ -435,6 +435,8 @@ message TransformationParameter {
   optional bool rotate = 10 [default = false];
   // Synchronize the transformation along the num dimension
   optional bool synchronized = 11 [default = false];
+  // Optional scale parameter for the transformation
+  repeated float scale_value = 12;
 }
 
 // Message that stores parameters shared by loss layers

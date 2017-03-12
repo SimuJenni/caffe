@@ -22,8 +22,10 @@ void TransformationLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   scale_ = param.scale();
   min_scale_ = param.min_scale();
   max_scale_ = param.max_scale();
-  for (int i = 0; i < bottom.size(); i++)
+  for (int i = 0; i < bottom.size(); i++) {
     mean_value_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>));
+    scale_value_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>));
+  }
 }
 
 template <typename Dtype>
@@ -48,6 +50,21 @@ void TransformationLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         Dtype * pm = mean_value_[i]->mutable_cpu_data();
         for (int j = 0; j < mean_value_[i]->count(); j++)
           pm[j] = 0;
+      }
+    }
+    if (scale_value_[i]->count() != Sbot[Sbot.size()-3]) {
+      scale_value_[i]->Reshape(std::vector<int>(1, Sbot[Sbot.size()-3]));
+      if (param.scale_value_size()) {
+        if (param.scale_value_size() > 1)
+          CHECK_GE(param.scale_value_size(), Sbot[Sbot.size()-3]) <<
+            "scale value and image channels dont match";
+        Dtype * pm = scale_value_[i]->mutable_cpu_data();
+        for (int j = 0; j < scale_value_[i]->count(); j++)
+          pm[j] = param.scale_value(j % param.scale_value_size());
+      } else {
+        Dtype * pm = scale_value_[i]->mutable_cpu_data();
+        for (int j = 0; j < scale_value_[i]->count(); j++)
+          pm[j] = 1;
       }
     }
 
@@ -122,6 +139,7 @@ void TransformationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const int C  = bottom[i]->shape()[Stop.size()-3];
     // Get the mean
     const Dtype * mean = mean_value_[i]->cpu_data();
+    const Dtype * scale = scale_value_[i]->cpu_data();
 
     const Dtype * pBot = bottom[i]->cpu_data();
     Dtype * pTop = top[i]->mutable_cpu_data();
@@ -143,7 +161,7 @@ void TransformationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                         (1-wx) * (wy)   * pBot[(n*C+c)*bW*bH + y0*bW + x1] +
                         (wx)   * (1-wy) * pBot[(n*C+c)*bW*bH + y1*bW + x0] +
                         (1-wx) * (1-wy) * pBot[(n*C+c)*bW*bH + y1*bW + x1];
-              pTop[k] = scale_ * (v - mean[c]);
+              pTop[k] = scale_ * scale[c] * (v - mean[c]);
             } else {
               pTop[k] = 0;
             }
